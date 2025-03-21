@@ -48,4 +48,45 @@ describe('[asynchronoustest] Test case', () => {
     test('the fetch fails with an error', async () => {
         await expect(fetchDataWithError()).rejects.toThrow('error')
     })
+
+    // CallBacks
+    const fetchDataCB = callback => {
+        setTimeout(() => {
+            // 20%的概率返回error
+            if (Math.random() < 0.2) {
+                callback(new Error('error'))
+            } else {
+                callback(null, 'peanut butter')
+            }
+        }, 1000)
+    }
+
+    test("Don't do this!", () => {
+        function callback(error, data) {
+            if (error) {
+                throw error
+            }
+            expect(data).toBe('peanut butter')
+        }
+
+        fetchDataCB(callback)
+        // 默认情况下，Jest 测试在执行结束时完成。这意味着此测试将无法按预期工作
+    })
+
+    test('the data is peanut butter', done => {
+        function callback(error, data) {
+            if (error) {
+                done(error)
+                return
+            }
+            try {
+                expect(data).toBe('peanut butter')
+                done()
+            } catch (error) {
+                done(error)
+            }
+        }
+
+        fetchDataCB(callback)
+    })
 })
